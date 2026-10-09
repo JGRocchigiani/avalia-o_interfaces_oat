@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Posterflix: protótipo de telas (OAT 1)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --page-bg:#EDE8DF;--page-fg:#1B1713;--page-mu:#5A5249;--page-card:#F8F5EF;--page-line:#CFC6B8;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);background:var(--page-bg)}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){--page-bg:#0D0C0B;--page-fg:#F3EEE6;--page-mu:#B0A89B;--page-card:#171512;--page-line:#2E2A25}
+}
+:root[data-theme="dark"]{--page-bg:#0D0C0B;--page-fg:#F3EEE6;--page-mu:#B0A89B;--page-card:#171512;--page-line:#2E2A25}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--page-bg);color:var(--page-fg);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.55}
+button{font-family:inherit}
+
+/* ---------- página ---------- */
+.wrap{max-width:1180px;margin:0 auto;padding:36px 20px 72px}
+h1,h2{font-family:"Playfair Display",Georgia,"Times New Roman",serif;margin:0}
+h1{font-size:clamp(32px,6vw,52px);line-height:1.05;margin-bottom:14px}
+h2{font-size:clamp(24px,4vw,30px);line-height:1.15;margin-bottom:6px}
+.lead{max-width:64ch;color:var(--page-mu);margin:0 0 30px;font-size:17px}
+.sub{color:var(--page-mu);margin:0 0 26px;max-width:64ch}
+.seq{margin-bottom:64px}
+.row3{display:flex;flex-wrap:wrap;gap:36px 28px;justify-content:center}
+.fig{margin:0;width:min(360px,100%)}
+.fig figcaption{margin-top:14px;font-size:14px;color:var(--page-mu);max-width:340px}
+.fig figcaption strong{display:block;color:var(--page-fg);font-size:15.5px;margin-bottom:2px}
+.foot{color:var(--page-mu);font-size:14px;border-top:1px solid var(--page-line);padding-top:20px}
+
+/* ---------- celular ---------- */
+.phone{
+  --bg:#141210;--s1:#1F1C19;--s2:#2A2622;--tx:#F3EEE6;--mu:#B5ADA2;--gold:#E9B44C;--on-gold:#1A1409;
+  --err:#FF9A8A;--tomato:#E5533D;--line:#3A352F;
+  position:relative;width:100%;height:740px;background:var(--bg);color:var(--tx);
+  border-radius:40px;border:8px solid #050505;
+  box-shadow:0 0 0 1px #3A352F,0 18px 40px rgba(0,0,0,.35);
+  overflow:hidden;display:flex;flex-direction:column;font-size:15px;line-height:1.4
+}
+.phone.flash{animation:flash 1.3s ease-out}
+@keyframes flash{0%{box-shadow:0 0 0 4px #E9B44C,0 18px 40px rgba(0,0,0,.35)}100%{box-shadow:0 0 0 1px #3A352F,0 18px 40px rgba(0,0,0,.35)}}
+@media (prefers-reduced-motion:reduce){.phone.flash{animation:none}*{transition:none!important}}
+.phone :focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+:where(.phone button){color:inherit}
+.sb{height:32px;flex:none;display:flex;justify-content:space-between;align-items:center;padding:8px 24px 0;font-size:12px;font-weight:600}
+.bat{width:22px;height:11px;border:1.5px solid var(--tx);border-radius:3px;position:relative}
+.bat::after{content:"";position:absolute;inset:1.5px;right:5px;background:var(--tx);border-radius:1px}
+.scroll{flex:1;overflow-y:auto;scrollbar-width:none;overscroll-behavior:contain}
+.scroll::-webkit-scrollbar{display:none}
+.mu{color:var(--mu)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+.btn{min-height:52px;width:100%;border-radius:14px;border:1px solid transparent;font:600 16px Inter,sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn.primary{background:var(--gold);color:var(--on-gold)}
+.btn.primary:disabled{opacity:.6;cursor:default}
+.btn.ghost{background:transparent;border-color:var(--line);color:var(--tx)}
+.linkbtn{background:none;border:0;padding:0 4px;min-height:44px;font:600 15px Inter,sans-serif;color:var(--gold);cursor:pointer}
+.ib{width:48px;height:48px;border-radius:50%;border:0;background:var(--s1);display:grid;place-items:center;cursor:pointer;flex:none}
+.topbar{display:flex;align-items:center;gap:8px;padding:2px 12px 6px 14px;flex:none}
+.tt{font-family:"Playfair Display",Georgia,serif;font-size:26px;font-weight:700;margin:0;flex:1}
+.sh{font-family:"Playfair Display",Georgia,serif;font-size:19px;font-weight:600;margin:22px 20px 12px}
+
+/* login */
+.mosaic{position:relative;flex:none;height:236px;display:flex;justify-content:center;gap:10px;overflow:hidden;padding-top:6px}
+.mosaic .col{display:flex;flex-direction:column;gap:10px;opacity:.5}
+.mosaic .col:nth-child(2){margin-top:-52px}
+.mosaic .col:nth-child(1),.mosaic .col:nth-child(3){margin-top:-8px}
+.mosaic .p{width:100px;height:150px;border-radius:8px;overflow:hidden}
+.mosaic::after{content:"";position:absolute;inset:auto 0 0 0;height:140px;background:linear-gradient(transparent,var(--bg) 88%)}
+.brand{position:absolute;z-index:2;left:0;right:0;bottom:4px;text-align:center}
+.brand .logo{display:inline-flex;align-items:center;gap:10px;color:var(--gold)}
+.brand .logo b{font-family:"Playfair Display",Georgia,serif;font-size:38px;font-weight:800;color:var(--tx);letter-spacing:.2px}
+.brand p{margin:0;color:var(--mu);font-size:14px}
+.form{padding:6px 24px 20px}
+.form label{display:block;font-weight:600;font-size:14.5px;margin:10px 0 6px}
+.form input{width:100%;min-height:52px;border-radius:12px;border:1px solid var(--line);background:var(--s1);color:var(--tx);padding:0 14px;font:500 16px Inter,sans-serif}
+.form input::placeholder{color:#8F877C}
+.form input[aria-invalid="true"]{border-color:var(--err)}
+.pwrap{position:relative}
+.pwrap input{padding-right:56px}
+.pwrap .tg{position:absolute;right:2px;top:2px;width:48px;height:48px;border:0;background:none;display:grid;place-items:center;cursor:pointer;color:var(--mu)}
+.msg{min-height:22px;margin:6px 0 0;font-size:13.5px;color:var(--mu);display:flex;gap:6px;align-items:center}
+.msg.err{color:var(--err)}
+.formrow{display:flex;justify-content:flex-end;margin:2px 0 6px}
+.alt{text-align:center;margin:10px 0 0;color:var(--mu);font-size:14.5px;display:flex;align-items:center;justify-content:center;gap:2px}
+
+/* chips, grid, cards */
+.chips{display:flex;gap:8px;overflow-x:auto;padding:2px 20px 6px;scrollbar-width:none;flex:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{min-height:44px;padding:0 16px;border-radius:22px;border:1px solid var(--line);background:transparent;font:500 14.5px Inter,sans-serif;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
+.chip[aria-pressed="true"]{background:var(--gold);color:var(--on-gold);border-color:var(--gold);font-weight:600}
+.chip[aria-pressed="true"]::before{content:"✓";font-size:13px}
+.fchip{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 12px 0 16px;border-radius:22px;background:var(--s2);border:1px solid var(--line);font:500 14px Inter,sans-serif;white-space:nowrap;cursor:pointer}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px 14px;padding:0 20px 24px}
+.pc{background:none;border:0;padding:0;text-align:left;cursor:pointer;display:block}
+.pc .art{display:block;aspect-ratio:2/3;border-radius:10px;overflow:hidden;box-shadow:0 6px 16px rgba(0,0,0,.45)}
+.pc .art svg{display:block}
+.pc .t{display:block;font-weight:600;font-size:15px;margin-top:9px;line-height:1.25}
+.pc .m{display:flex;gap:10px;flex-wrap:wrap;color:var(--mu);font-size:13px;margin-top:3px;align-items:center}
+.r{display:inline-flex;align-items:center;gap:4px}
+.feat{display:flex;gap:14px;width:calc(100% - 40px);margin:0 20px;padding:12px;background:var(--s1);border:1px solid var(--line);border-radius:16px;text-align:left;cursor:pointer}
+.feat .fa{flex:none;width:96px;aspect-ratio:2/3;border-radius:8px;overflow:hidden;display:block}
+.feat .fb2{display:flex;flex-direction:column;justify-content:center;gap:6px}
+.feat .ft{font-family:"Playfair Display",Georgia,serif;font-size:22px;font-weight:700;line-height:1.15}
+.feat .fm{color:var(--mu);font-size:13.5px}
+.feat .fs{display:flex;gap:12px;font-size:14px;font-weight:600}
+.nav{flex:none;display:grid;grid-template-columns:repeat(4,1fr);background:var(--s1);border-top:1px solid var(--line);padding:4px 6px 12px}
+.nav button{position:relative;min-height:56px;background:none;border:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font:500 12.5px Inter,sans-serif;color:var(--mu);cursor:pointer}
+.nav button[aria-current="page"]{color:var(--gold);font-weight:700}
+.nav button[aria-current="page"]::before{content:"";position:absolute;top:0;width:26px;height:3px;border-radius:2px;background:var(--gold)}
+
+/* detalhes */
+.hero{position:relative;height:276px;overflow:hidden;display:grid;place-items:center;flex:none}
+.hero .bgp{position:absolute;inset:-24px;filter:blur(22px) saturate(1.3);opacity:.75}
+.hero .bgp svg{display:block}
+.hero .fg{position:relative;z-index:1;width:140px;aspect-ratio:2/3;border-radius:8px;overflow:hidden;box-shadow:0 16px 32px rgba(0,0,0,.65);margin-top:14px}
+.hero .fg svg{display:block}
+.hero::after{content:"";position:absolute;inset:auto 0 0 0;height:70px;background:linear-gradient(transparent,var(--bg))}
+.hero .tb{position:absolute;z-index:3;top:4px;left:12px;right:12px;display:flex;justify-content:space-between}
+.hero .tb .ib{background:rgba(20,18,16,.72)}
+.ftitle{font-family:"Playfair Display",Georgia,serif;font-size:29px;font-weight:700;line-height:1.1;text-align:center;margin:0 20px 6px}
+.fmeta{display:flex;justify-content:center;gap:16px;color:var(--mu);font-size:14px;margin-bottom:16px}
+.scores{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:0 20px;margin-bottom:18px}
+.sc{background:var(--s1);border:1px solid var(--line);border-radius:14px;padding:12px 4px 10px;text-align:center}
+.sc .ico{display:block;height:24px;margin-bottom:2px}
+.sc b{display:block;font-size:22px;font-weight:700;line-height:1.2}
+.sc b i{font-style:normal;font-size:13px;color:var(--mu);font-weight:500}
+.sc small{display:block;color:var(--mu);font-size:12.5px}
+.seg{display:flex;gap:2px;margin:0 20px;border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:none}
+.seg::-webkit-scrollbar{display:none}
+.seg button{min-height:48px;padding:0 10px;background:none;border:0;color:var(--mu);font:600 14.5px Inter,sans-serif;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap}
+.seg button[aria-selected="true"]{color:var(--gold);border-bottom-color:var(--gold)}
+.panel{padding:16px 20px 20px}
+.panel p{margin:0 0 6px;line-height:1.6}
+.clamp{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.cast{display:flex;align-items:center;gap:14px;padding:8px 0;min-height:60px}
+.cast .av{flex:none;width:46px;height:46px;border-radius:50%;background:var(--s2);color:var(--gold);display:grid;place-items:center;font-weight:700}
+.cast b{display:block;font-weight:600}
+.cast span{color:var(--mu);font-size:13.5px}
+dl.fx{display:grid;grid-template-columns:96px 1fr;gap:12px 14px;margin:0}
+dl.fx dt{color:var(--mu);font-size:14px}
+dl.fx dd{margin:0;font-weight:500}
+details{border-bottom:1px solid var(--line)}
+summary{min-height:52px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-weight:600;list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";font-size:22px;color:var(--gold);font-weight:500}
+details[open] summary::after{content:"–"}
+details p{color:var(--mu);padding-bottom:14px}
+.cta{flex:none;padding:12px 20px 18px;background:var(--bg);border-top:1px solid var(--line)}
+
+/* busca */
+.row{display:flex;gap:14px;align-items:center;padding:8px 20px;min-height:76px;background:none;border:0;width:100%;text-align:left;cursor:pointer}
+.row .th{flex:none;width:48px;height:72px;border-radius:6px;overflow:hidden;display:block}
+.row .tx{flex:1;display:block}
+.row .tx b{display:block;font-weight:600;font-size:15.5px}
+.row .tx span{color:var(--mu);font-size:13.5px}
+.empty{padding:28px 24px;text-align:center;color:var(--mu)}
+.empty p{margin:0 0 6px}
+.dock{flex:none;padding:10px 16px 8px;display:flex;gap:10px;background:var(--bg)}
+.sf{flex:1;position:relative}
+.sf input{width:100%;min-height:52px;border-radius:26px;border:1px solid var(--line);background:var(--s1);color:var(--tx);padding:0 16px 0 48px;font:500 16px Inter,sans-serif}
+.sf input::placeholder{color:#8F877C}
+.sf svg{position:absolute;left:16px;top:14px;color:var(--mu)}
+.fb{position:relative;width:52px;height:52px;border-radius:50%;background:var(--s1);border:1px solid var(--line);display:grid;place-items:center;cursor:pointer;flex:none}
+.fb .bd{position:absolute;top:-4px;right:-4px;min-width:22px;height:22px;border-radius:11px;background:var(--gold);color:var(--on-gold);font:700 12.5px/22px Inter,sans-serif;text-align:center;padding:0 5px}
+
+/* filtros */
+.dim{position:absolute;inset:0;background:rgba(0,0,0,.66)}
+.sheet{position:absolute;left:0;right:0;bottom:0;height:84%;background:var(--s1);border-radius:26px 26px 0 0;border-top:1px solid var(--line);display:flex;flex-direction:column}
+.grab{width:44px;height:5px;border-radius:3px;background:var(--line);margin:10px auto 2px;flex:none}
+.shead{display:flex;justify-content:space-between;align-items:center;padding:4px 16px 6px 20px;flex:none}
+.shead h3{font-family:"Playfair Display",Georgia,serif;font-size:24px;margin:0}
+.sbody{flex:1;overflow-y:auto;padding:0 20px 10px;scrollbar-width:none}
+.sbody::-webkit-scrollbar{display:none}
+.grp{margin:10px 0 18px}
+.grp h4{font:600 15px Inter,sans-serif;margin:0 0 10px}
+.wrapc{display:flex;flex-wrap:wrap;gap:8px}
+.rowb{display:flex;justify-content:space-between;align-items:baseline}
+.rowb output{font-weight:700;color:var(--gold);font-size:17px}
+input[type=range]{width:100%;height:44px;accent-color:#E9B44C;margin:0}
+.scale{display:flex;justify-content:space-between;color:var(--mu);font-size:12.5px}
+.swrow{display:flex;justify-content:space-between;align-items:center;gap:14px;min-height:56px}
+.swrow span{font-weight:600;font-size:15px}
+.swrow small{display:block;color:var(--mu);font-weight:400;font-size:13px}
+.swt2{flex:none;width:56px;height:34px;border-radius:17px;background:var(--s2);border:1px solid var(--line);position:relative;cursor:pointer}
+.swt2::after{content:"";position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:50%;background:var(--tx);transition:transform .15s}
+.swt2[aria-checked="true"]{background:var(--gold);border-color:var(--gold)}
+.swt2[aria-checked="true"]::after{transform:translateX(22px);background:var(--on-gold)}
+.sfoot{flex:none;padding:12px 20px 20px;border-top:1px solid var(--line)}
+.resbar{display:flex;justify-content:space-between;align-items:center;padding:6px 20px 10px}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header>
+    <h1>Posterflix</h1>
+    <p class="sub" style="margin-bottom:14px">OAT 1, Avaliação de Interfaces. Professor: Marcelo Santana Jr<br>Grupo: João Guilherme Rocchigiani Rocha da Fonseca, Ygor Alves da Costa e Eduardo Amado Leite</p>
+    <p class="lead">Protótipo navegável das seis telas da OAT 1 de Avaliação de Interfaces. A arte do cinema na palma da sua mão: uma galeria de pôsteres com notas do IMDb e do Rotten Tomatoes. Clique nos campos, abas, filtros e botões: as telas respondem.</p>
+  </header>
+
+
+  <section class="seq" aria-labelledby="ta">
+    <h2 id="ta">Sequência A: fluxo principal</h2>
+    <p class="sub">Entrada no app, exploração da galeria e leitura dos detalhes de um filme.</p>
+    <div class="row3">
+      <figure class="fig" id="f-a1"><div class="phone" id="a1"></div>
+        <figcaption><strong>Tela 1 de 3: Login</strong>Formulário na metade inferior (zona do polegar), validação em tempo real e dica de senha antes do erro.</figcaption></figure>
+      <figure class="fig" id="f-a2"><div class="phone" id="a2"></div>
+        <figcaption><strong>Tela 2 de 3: Galeria de pôsteres</strong>Pôsteres em destaque, categorias em abas e grade de duas colunas com a nota resumida.</figcaption></figure>
+      <figure class="fig" id="f-a3"><div class="phone" id="a3"></div>
+        <figcaption><strong>Tela 3 de 3: Detalhes do filme</strong>Três notas em destaque e o restante em abas, para mostrar uma coisa de cada vez.</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="seq" aria-labelledby="tb">
+    <h2 id="tb">Sequência B: fluxo de apoio</h2>
+    <p class="sub">Busca com filtros. Os filtros escolhidos na tela 2 aparecem como etiquetas na tela 3 e atualizam o total de resultados.</p>
+    <div class="row3">
+      <figure class="fig" id="f-b1"><div class="phone" id="b1"></div>
+        <figcaption><strong>Tela 1 de 3: Busca</strong>Campo de busca embaixo, ao alcance do polegar. Digite um título para filtrar a lista.</figcaption></figure>
+      <figure class="fig" id="f-b2"><div class="phone" id="b2"></div>
+        <figcaption><strong>Tela 2 de 3: Filtros</strong>Painel inferior com grupos de opções e botão que mostra quantos resultados virão.</figcaption></figure>
+      <figure class="fig" id="f-b3"><div class="phone" id="b3"></div>
+        <figcaption><strong>Tela 3 de 3: Resultados</strong>Filtros ativos removíveis com um toque, ordenação e estado vazio com saída clara.</figcaption></figure>
+    </div>
+  </section>
+
+  <p class="foot">Filmes reais, com notas de referência do IMDb e do Rotten Tomatoes (valores aproximados, que mudam com o tempo). Os pôsteres são arte ilustrativa criada para o protótipo. Telas desenhadas para 360 px de largura.</p>
+</main>
+
+<script>
+(function(){
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const fmt=n=>n.toFixed(1).replace('.',',');
+const norm=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+
+/* ---------- ícones ---------- */
+const ICON={
+  grid:'<path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/>',
+  search:'<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>',
+  bookmark:'<path d="M6 3h12v18l-6-4-6 4z"/>',
+  user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/>',
+  back:'<path d="M15 5l-7 7 7 7"/>',
+  filter:'<path d="M4 6h16M7 12h10M10 18h4"/>',
+  eye:'<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  eyeoff:'<path d="M3 3l18 18M10.6 5.1A9.7 9.7 0 0112 5c6 0 10 7 10 7a17 17 0 01-3.2 3.9M6.6 6.6C3.7 8.5 2 12 2 12s4 7 10 7c1.6 0 3-.4 4.3-1M9.9 9.9a3 3 0 004.2 4.2"/>',
+  x:'<path d="M6 6l12 12M18 6L6 18"/>',
+  sort:'<path d="M7 4v16M4 17l3 3 3-3M17 20V4M14 7l3-3 3 3"/>',
+  check:'<path d="M5 12l5 5 9-10"/>',
+  warn:'<path d="M12 4l9 16H3z"/><path d="M12 10v4M12 17v.5"/>',
+  film:'<rect x="3" y="4" width="18" height="16" rx="3"/><path d="M8 4v16M16 4v16M3 9h5M3 15h5M16 9h5M16 15h5"/>'
+};
+const ic=(n,s=24)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[n]}</svg>`;
+const star=(s=14)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" aria-hidden="true"><path fill="#E9B44C" d="M12 2l3 6.9 7.5.7-5.7 5 1.7 7.4L12 18l-6.5 4 1.7-7.4-5.7-5 7.5-.7z"/></svg>`;
+const tomato=(s=14)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="14" r="8.5" fill="#E5533D"/><path d="M12 6.5c-1.5-2-3.5-2.4-5-1.6 1.2.2 2.2.9 3 2zM12 6.5c1.5-2 3.5-2.4 5-1.6-1.2.2-2.2.9-3 2zM12 6.5V3.5" fill="#5CA14A" stroke="#5CA14A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const popcorn=(s=14)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" aria-hidden="true"><circle cx="8.5" cy="8" r="3.2" fill="#F5D88A"/><circle cx="12.5" cy="6.6" r="3.4" fill="#F5D88A"/><circle cx="16" cy="8.6" r="3" fill="#F5D88A"/><path d="M5.5 10h13l-1.6 11H7.1z" fill="#F3EEE6"/><path d="M9 10l.5 11M12 10v11M15 10l-.5 11" stroke="#E5533D" stroke-width="1.7"/></svg>`;
+
+/* ---------- pôsteres fictícios (SVG) ---------- */
+const MOT={
+  cacau:'<circle cx="100" cy="105" r="42" fill="ACC"/><path d="M0 205Q50 158 100 196T200 186V300H0Z" fill="rgba(0,0,0,.35)"/><path d="M0 236Q60 196 120 230T200 220V300H0Z" fill="rgba(0,0,0,.5)"/>',
+  farol:'<path d="M100 116L200 58V150Z" fill="ACC" opacity=".25"/><path d="M88 250L96 126H104L112 250Z" fill="#F3EEE6"/><rect x="92" y="108" width="16" height="16" fill="ACC"/><path d="M0 250Q50 238 100 250T200 250V300H0Z" fill="rgba(0,0,0,.45)"/>',
+  neon:'<g stroke="ACC" stroke-width="3" fill="none"><circle cx="100" cy="112" r="48"/><circle cx="100" cy="112" r="30" opacity=".6"/><path d="M20 206H180M40 220H160M60 234H140" opacity=".85"/></g>',
+  cidade:'<g fill="rgba(0,0,0,.45)"><rect x="20" y="130" width="26" height="120"/><rect x="52" y="90" width="30" height="160"/><rect x="88" y="150" width="24" height="100"/><rect x="118" y="105" width="32" height="145"/><rect x="156" y="140" width="24" height="110"/></g><path d="M0 220Q25 205 50 220T100 220T150 220T200 220V300H0Z" fill="ACC" opacity=".55"/>',
+  hora:'<circle cx="100" cy="112" r="38" fill="ACC"/><g fill="#F3EEE6"><circle cx="36" cy="54" r="1.8"/><circle cx="168" cy="40" r="1.4"/><circle cx="150" cy="82" r="1.8"/><circle cx="52" cy="140" r="1.4"/><circle cx="176" cy="150" r="1.8"/><circle cx="80" cy="36" r="1.4"/></g><path d="M0 232Q60 214 110 232T200 226V300H0Z" fill="rgba(0,0,0,.4)"/>',
+  sertao:'<circle cx="100" cy="140" r="52" fill="ACC"/><path d="M0 220L50 160L90 205L140 150L200 215V300H0Z" fill="rgba(0,0,0,.5)"/>',
+  sessao:'<path d="M100 44L40 252H160Z" fill="ACC" opacity=".28"/><rect x="86" y="30" width="28" height="22" rx="3" fill="#F3EEE6"/><circle cx="92" cy="25" r="8" fill="#F3EEE6"/><circle cx="110" cy="25" r="8" fill="#F3EEE6"/>'
+};
+const FILMS=[
+  {id:'cdd',t:['Cidade','de Deus'],year:2002,genre:'Drama',imdb:8.6,rt:91,aud:97,c1:'#3B1F14',c2:'#B8741F',ac:'#F2B84B',m:'cacau'},
+  {id:'parasita',t:['Parasita'],year:2019,genre:'Suspense',imdb:8.5,rt:99,aud:90,c1:'#0E2A3A',c2:'#2F7F8F',ac:'#F2D27A',m:'farol'},
+  {id:'pulp',t:['Pulp','Fiction'],year:1994,genre:'Crime',imdb:8.8,rt:92,aud:96,c1:'#1A0A1F',c2:'#B8264A',ac:'#FF5C86',m:'neon'},
+  {id:'chefao',t:['O Poderoso','Chefão'],year:1972,genre:'Crime',imdb:9.2,rt:97,aud:98,c1:'#0B1E33',c2:'#4C8CC4',ac:'#7CD0E8',m:'cidade'},
+  {id:'chihiro',t:['A Viagem','de Chihiro'],year:2001,genre:'Animação',imdb:8.6,rt:97,aud:96,c1:'#101A3D',c2:'#5B73D6',ac:'#E8E2C8',m:'hora'},
+  {id:'clube',t:['Clube','da Luta'],year:1999,genre:'Drama',imdb:8.8,rt:79,aud:96,c1:'#3A1D0E',c2:'#D9892A',ac:'#FFD27A',m:'sertao'},
+  {id:'silencio',t:['O Silêncio','dos Inocentes'],year:1991,genre:'Suspense',imdb:8.6,rt:96,aud:95,c1:'#1C1C1C',c2:'#7A2626',ac:'#F1D9A0',m:'sessao'}
+];
+const title=f=>f.t.join(' ');
+let uid=0;
+function poster(f,o={}){
+  const id='pz'+(++uid);
+  const mot=MOT[f.m].split('ACC').join(f.ac);
+  const ys=f.t.length===2?[258,282]:[276];
+  const txt=f.t.map((l,i)=>`<text x="100" y="${ys[i]}" text-anchor="middle" font-family="'Playfair Display',Georgia,serif" font-weight="700" font-size="23" fill="#F3EEE6">${l}</text>`).join('');
+  const a=o.decor?'aria-hidden="true"':`role="img" aria-label="Pôster de ${title(f)}"`;
+  return `<svg viewBox="0 0 200 300" preserveAspectRatio="${o.slice?'xMidYMid slice':'xMidYMid meet'}" width="100%" height="100%" ${a}><defs><linearGradient id="${id}g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${f.c1}"/><stop offset="1" stop-color="${f.c2}"/></linearGradient><linearGradient id="${id}s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".8"/></linearGradient></defs><rect width="200" height="300" fill="url(#${id}g)"/>${mot}<rect y="190" width="200" height="110" fill="url(#${id}s)"/>${txt}</svg>`;
+}
+
+/* ---------- peças comuns ---------- */
+const sbar=()=>`<div class="sb" aria-hidden="true"><span>9:41</span><span class="bat"></span></div>`;
+const nav=a=>`<nav class="nav" aria-label="Navegação principal">${[['grid','Galeria','f-a2'],['search','Buscar','f-b1'],['bookmark','Coleção',''],['user','Perfil','']].map(([i,l,g])=>`<button type="button" ${g?`data-goto="${g}"`:''} ${l===a?'aria-current="page"':''}>${ic(i)}<span>${l}</span></button>`).join('')}</nav>`;
+const mini=f=>`<span class="r" aria-hidden="true">${star()}${fmt(f.imdb)}</span><span class="r" aria-hidden="true">${tomato()}${f.rt}%</span>`;
+const card=f=>`<button type="button" class="pc" data-goto="f-a3" aria-label="${title(f)}, ${f.year}, IMDb ${fmt(f.imdb)}, Tomatometer ${f.rt} por cento"><span class="art">${poster(f)}</span><span class="t">${title(f)}</span><span class="m"><span>${f.year}</span>${mini(f)}</span></button>`;
+
+/* ---------- A1: Login ---------- */
+function A1(){
+  const cols=[[FILMS[2],FILMS[5]],[FILMS[0],FILMS[4]],[FILMS[3],FILMS[6]]];
+  return `${sbar()}
+  <div class="scroll">
+    <div class="mosaic" aria-hidden="true">${cols.map(c=>`<div class="col">${c.map(f=>`<div class="p">${poster(f,{decor:true})}</div>`).join('')}</div>`).join('')}
+      <div class="brand"><span class="logo">${ic('film',30)}<b>Posterflix</b></span><p>A arte do cinema na palma da sua mão</p></div>
+    </div>
+    <form class="form" id="loginForm" novalidate>
+      <label for="email">E-mail</label>
+      <input id="email" type="email" inputmode="email" autocomplete="email" placeholder="nome@email.com" autocapitalize="none">
+      <div class="msg" id="emailMsg" role="alert"></div>
+      <label for="pw">Senha</label>
+      <div class="pwrap"><input id="pw" type="password" autocomplete="current-password" placeholder="Sua senha" aria-describedby="pwMsg"><button type="button" class="tg" id="pwTg" aria-label="Mostrar senha" aria-pressed="false">${ic('eye')}</button></div>
+      <div class="msg" id="pwMsg" role="alert">Use pelo menos 8 caracteres.</div>
+      <div class="formrow"><button type="button" class="linkbtn">Esqueci minha senha</button></div>
+      <button class="btn primary" type="submit" id="loginBtn">Entrar</button>
+      <p class="alt">Novo por aqui? <button type="button" class="linkbtn">Criar conta</button></p>
+    </form>
+  </div>`;
+}
+
+/* ---------- A2: Galeria ---------- */
+const CATS=['Oficiais','Alternativos','Festivais','Colecionador'];
+let cat=0;
+const FEAT=FILMS[4];
+function galleryGrid(){
+  const rest=FILMS.filter(f=>f.id!==FEAT.id);
+  const k=(cat*2)%rest.length;
+  return rest.slice(k).concat(rest.slice(0,k)).map(card).join('');
+}
+function A2(){
+  return `${sbar()}
+  <div class="topbar"><h2 class="tt">Galeria</h2><button type="button" class="ib" data-goto="f-b1" aria-label="Buscar pôsteres">${ic('search')}</button></div>
+  <div class="chips" role="group" aria-label="Categorias de pôster">${CATS.map((c,i)=>`<button type="button" class="chip gcat" data-i="${i}" aria-pressed="${i===cat}">${c}</button>`).join('')}</div>
+  <div class="scroll">
+    <h3 class="sh">Destaque da semana</h3>
+    <button type="button" class="feat" data-goto="f-a3" aria-label="${title(FEAT)}, nota IMDb ${fmt(FEAT.imdb)}">
+      <span class="fa">${poster(FEAT)}</span>
+      <span class="fb2"><span class="ft">${title(FEAT)}</span><span class="fm">Animação clássica dirigida por Hayao Miyazaki</span><span class="fs" aria-hidden="true"><span class="r">${star(16)}${fmt(FEAT.imdb)}</span><span class="r">${tomato(16)}${FEAT.rt}%</span></span></span>
+    </button>
+    <h3 class="sh">Novidades no acervo</h3>
+    <div class="grid" id="a2grid">${galleryGrid()}</div>
+  </div>
+  ${nav('Galeria')}`;
+}
+
+/* ---------- A3: Detalhes ---------- */
+const F=FILMS[0];
+const DET={
+  syn:'Entre os anos 1960 e 1980, na favela Cidade de Deus, no Rio de Janeiro, dois garotos seguem caminhos opostos: Buscapé sonha em ser fotógrafo, enquanto Dadinho se transforma no traficante Zé Pequeno. Pelo olhar de Buscapé, o filme acompanha o crescimento da violência no bairro.',
+  cast:[['Alexandre Rodrigues','Buscapé'],['Leandro Firmino','Zé Pequeno'],['Phellipe Haagensen','Bené'],['Seu Jorge','Mané Galinha']],
+  ficha:[['Direção','Fernando Meirelles e Kátia Lund'],['Roteiro','Bráulio Mantovani, a partir do romance de Paulo Lins'],['Fotografia','César Charlone'],['Música','Antônio Pinto e Ed Cortês'],['Duração','2h 09min'],['País','Brasil, França e Alemanha']],
+  trivia:[['Bastidores','As filmagens aconteceram em favelas reais do Rio de Janeiro, e boa parte do elenco era formada por atores não profissionais.'],['Origem','O filme adapta o romance de Paulo Lins, inspirado na vivência do autor na comunidade.'],['Reconhecimento','Estreou no Festival de Cannes em 2002 e recebeu quatro indicações ao Oscar.']]
+};
+const TABS=[['syn','Sinopse'],['cast','Elenco'],['fic','Ficha'],['bst','Bastidores']];
+let tab='syn',coll=false;
+function panel(k){
+  if(k==='syn')return `<p class="clamp" id="synp">${DET.syn}</p><button type="button" class="linkbtn" id="more" aria-expanded="false">Ler mais</button>`;
+  if(k==='cast')return DET.cast.map(([n,r])=>`<div class="cast"><span class="av" aria-hidden="true">${n.split(' ').map(w=>w[0]).slice(0,2).join('')}</span><div><b>${n}</b><span>${r}</span></div></div>`).join('');
+  if(k==='fic')return `<dl class="fx">${DET.ficha.map(([a,b])=>`<dt>${a}</dt><dd>${b}</dd>`).join('')}</dl>`;
+  return DET.trivia.map(([a,b],i)=>`<details ${i===0?'open':''}><summary>${a}</summary><p>${b}</p></details>`).join('');
+}
+function A3(){
+  return `${sbar()}
+  <div class="scroll">
+    <div class="hero">
+      <div class="bgp" aria-hidden="true">${poster(F,{slice:true,decor:true})}</div>
+      <div class="fg">${poster(F)}</div>
+      <div class="tb"><button type="button" class="ib" data-goto="f-a2" aria-label="Voltar para a galeria">${ic('back')}</button><button type="button" class="ib collbtn" aria-label="Salvar na coleção" aria-pressed="false">${ic('bookmark')}</button></div>
+    </div>
+    <h2 class="ftitle">${title(F)}</h2>
+    <div class="fmeta"><span>${F.year}</span><span>2h 09min</span><span>${F.genre}</span></div>
+    <div class="scores">
+      <div class="sc"><span class="ico">${star(24)}</span><b>${fmt(F.imdb)}<i>/10</i></b><small>IMDb</small></div>
+      <div class="sc"><span class="ico">${tomato(24)}</span><b>${F.rt}%</b><small>Tomatometer</small></div>
+      <div class="sc"><span class="ico">${popcorn(24)}</span><b>${F.aud}%</b><small>Público</small></div>
+    </div>
+    <div class="seg" role="tablist" aria-label="Informações do filme">${TABS.map(([k,l])=>`<button type="button" role="tab" data-tab="${k}" aria-selected="${k===tab}">${l}</button>`).join('')}</div>
+    <div class="panel" id="a3panel" role="tabpanel">${panel(tab)}</div>
+  </div>
+  <div class="cta" aria-live="polite"><button type="button" class="btn primary collbtn2" aria-pressed="false">Adicionar à coleção</button></div>`;
+}
+
+/* ---------- Estado da busca/filtros ---------- */
+const TYPES=['Oficial','Alternativo','Festival','Colecionador'];
+const GENRES=['Drama','Ficção científica','Suspense','Terror','Comédia','Documentário'];
+const DECS=['1970','1980','1990','2000','2010','2020'];
+const DEF=()=>({types:new Set(['Alternativo','Festival']),genres:new Set(['Drama']),decades:new Set(['2020']),imdb:7.5,fresh:false});
+const S=DEF();
+const SORTS=[['Maior nota',(a,b)=>b.imdb-a.imdb],['Mais recentes',(a,b)=>b.year-a.year],['Ordem alfabética',(a,b)=>title(a).localeCompare(title(b),'pt')]];
+let sortI=0;
+function activeFilters(){
+  const a=[];
+  S.types.forEach(v=>a.push([v,'types:'+v]));
+  S.genres.forEach(v=>a.push([v,'genres:'+v]));
+  S.decades.forEach(v=>a.push([v+'s','decades:'+v]));
+  if(S.imdb>1)a.push(['IMDb '+fmt(S.imdb)+'+','imdb']);
+  if(S.fresh)a.push(['Críticas frescas','fresh']);
+  return a;
+}
+function total(){
+  const n=S.types.size+S.genres.size+S.decades.size;
+  if(n>=9)return 0;
+  let c=240*Math.pow(.72,n)*(1-(S.imdb-1)/12);
+  if(S.fresh)c*=.7;
+  return Math.max(0,Math.round(c));
+}
+const plural=n=>n===1?'1 pôster':`${n} pôsteres`;
+
+/* ---------- B1: Busca ---------- */
+const RECENT=['Neo-noir','Cartaz minimalista','Anos 70','Sertão'];
+const rowF=(f,tag='button')=>`<${tag} ${tag==='button'?'type="button" data-goto="f-a3"':''} class="row"><span class="th">${poster(f,{decor:true})}</span><span class="tx"><b>${title(f)}</b><span>${f.year}, ${f.genre}</span></span><span class="r" aria-hidden="true">${star(16)}${fmt(f.imdb)}</span></${tag}>`;
+function B1(){
+  return `${sbar()}
+  <div class="topbar"><h2 class="tt">Buscar</h2></div>
+  <div class="scroll">
+    <h3 class="sh" style="margin-top:8px">Buscas recentes</h3>
+    <div class="chips" style="flex-wrap:wrap;overflow:visible">${RECENT.map(r=>`<button type="button" class="chip recent">${r}</button>`).join('')}</div>
+    <h3 class="sh">Em alta hoje</h3>
+    <div id="b1list">${FILMS.slice(0,5).map(f=>rowF(f)).join('')}</div>
+    <div class="empty" id="b1empty" hidden></div>
+  </div>
+  <div class="dock">
+    <div class="sf">${ic('search',20)}<label class="sr" for="q">Buscar pôsteres, filmes ou pessoas</label><input id="q" type="search" placeholder="Título, diretor ou estilo" autocomplete="off"></div>
+    <button type="button" class="fb" data-goto="f-b2" aria-label="Abrir filtros">${ic('filter')}<span class="bd" id="bd" aria-hidden="true">0</span></button>
+  </div>
+  ${nav('Buscar')}`;
+}
+
+/* ---------- B2: Filtros ---------- */
+const chipsHtml=(k,list)=>list.map(v=>`<button type="button" class="chip fc" data-k="${k}" data-v="${v}" aria-pressed="false">${v==='1970'||v==='1980'||v==='1990'||v==='2000'||v==='2010'||v==='2020'?v+'s':v}</button>`).join('');
+function B2(){
+  return `${sbar()}
+  <div class="topbar" aria-hidden="true"><h2 class="tt">Buscar</h2></div>
+  <div class="scroll" aria-hidden="true" style="overflow:hidden"><h3 class="sh" style="margin-top:8px">Em alta hoje</h3>${FILMS.slice(0,4).map(f=>rowF(f,'div')).join('')}</div>
+  <div class="dim"></div>
+  <div class="sheet" role="dialog" aria-label="Filtros">
+    <div class="grab" aria-hidden="true"></div>
+    <div class="shead"><h3>Filtros</h3><button type="button" class="linkbtn" id="clr">Limpar</button></div>
+    <div class="sbody">
+      <div class="grp"><h4 id="gt1">Tipo de pôster</h4><div class="wrapc" role="group" aria-labelledby="gt1">${chipsHtml('types',TYPES)}</div></div>
+      <div class="grp"><h4 id="gt2">Gênero</h4><div class="wrapc" role="group" aria-labelledby="gt2">${chipsHtml('genres',GENRES)}</div></div>
+      <div class="grp"><h4 id="gt3">Década</h4><div class="wrapc" role="group" aria-labelledby="gt3">${chipsHtml('decades',DECS)}</div></div>
+      <div class="grp"><div class="rowb"><h4 id="gt4">Nota mínima no IMDb</h4><output id="imdbOut" for="imdbR">7,5</output></div>
+        <input type="range" id="imdbR" min="1" max="10" step="0.5" value="7.5" aria-labelledby="gt4"><div class="scale" aria-hidden="true"><span>1</span><span>10</span></div></div>
+      <div class="grp"><div class="swrow"><span id="gt5">Somente críticas frescas<small>Tomatometer de 60% ou mais</small></span><button type="button" class="swt2" id="fresh" role="switch" aria-checked="false" aria-labelledby="gt5"></button></div></div>
+    </div>
+    <div class="sfoot"><button type="button" class="btn primary" id="apply" data-goto="f-b3">Ver pôsteres</button></div>
+  </div>`;
+}
+
+/* ---------- B3: Resultados ---------- */
+function B3(){
+  return `${sbar()}
+  <div class="topbar"><button type="button" class="ib" data-goto="f-b2" aria-label="Voltar para os filtros">${ic('back')}</button><h2 class="tt">Resultados</h2></div>
+  <div class="scroll" id="b3body"></div>
+  ${nav('Buscar')}`;
+}
+function renderB3(){
+  const n=total(),af=activeFilters();
+  const films=FILMS.slice().sort(SORTS[sortI][1]).slice(0,Math.min(6,n));
+  $('#b3body').innerHTML=
+    `<div class="chips" aria-label="Filtros ativos">${af.length?af.map(([l,k])=>`<button type="button" class="fchip" data-rm="${k}" aria-label="Remover filtro ${l}">${l}${ic('x',16)}</button>`).join(''):'<span class="mu" style="padding:10px 0">Nenhum filtro ativo</span>'}</div>
+     <div class="resbar"><strong>${plural(n)}</strong><button type="button" class="linkbtn" id="sortB" style="display:inline-flex;align-items:center;gap:6px">${ic('sort',18)}${SORTS[sortI][0]}</button></div>`+
+    (n===0
+      ?`<div class="empty"><p><strong style="color:var(--tx)">Nenhum pôster com essa combinação.</strong></p><p>Reduza a nota mínima ou remova um filtro.</p><div style="margin-top:16px"><button type="button" class="btn ghost" data-act="clear">Limpar filtros</button></div></div>`
+      :`<div class="grid">${films.map(card).join('')}</div>`);
+}
+
+/* ---------- sincronização B1/B2/B3 ---------- */
+function sync(){
+  $$('.fc').forEach(b=>b.setAttribute('aria-pressed',S[b.dataset.k].has(b.dataset.v)));
+  $('#imdbR').value=S.imdb;
+  $('#imdbOut').textContent=fmt(S.imdb);
+  $('#fresh').setAttribute('aria-checked',S.fresh);
+  const n=total(),ap=$('#apply');
+  ap.textContent=n===0?'Sem resultados: ajuste os filtros':'Ver '+plural(n);
+  ap.disabled=n===0;
+  const k=activeFilters().length,bd=$('#bd');
+  bd.textContent=k;bd.hidden=k===0;
+  renderB3();
+}
+
+/* ---------- montagem ---------- */
+$('#a1').innerHTML=A1();
+$('#a2').innerHTML=A2();
+$('#a3').innerHTML=A3();
+$('#b1').innerHTML=B1();
+$('#b2').innerHTML=B2();
+$('#b3').innerHTML=B3();
+sync();
+
+/* ---------- navegação entre telas ---------- */
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+function flashTo(id){
+  const f=document.getElementById(id);if(!f)return;
+  f.scrollIntoView({behavior:reduce?'auto':'smooth',block:'center'});
+  const p=f.querySelector('.phone');p.classList.remove('flash');void p.offsetWidth;p.classList.add('flash');
+}
+document.addEventListener('click',e=>{
+  const t=e.target;
+  const g=t.closest('[data-goto]');
+  if(g&&!g.disabled&&g.dataset.goto)flashTo(g.dataset.goto);
+
+  const gc=t.closest('.gcat');
+  if(gc){cat=+gc.dataset.i;$$('.gcat').forEach(b=>b.setAttribute('aria-pressed',b===gc));$('#a2grid').innerHTML=galleryGrid();}
+
+  const tg=t.closest('#pwTg');
+  if(tg){const pw=$('#pw'),show=pw.type==='password';pw.type=show?'text':'password';tg.innerHTML=ic(show?'eyeoff':'eye');tg.setAttribute('aria-pressed',show);tg.setAttribute('aria-label',show?'Ocultar senha':'Mostrar senha');}
+
+  const tb=t.closest('[data-tab]');
+  if(tb){tab=tb.dataset.tab;$$('[data-tab]').forEach(b=>b.setAttribute('aria-selected',b===tb));$('#a3panel').innerHTML=panel(tab);}
+
+  const more=t.closest('#more');
+  if(more){const p=$('#synp'),open=p.classList.toggle('clamp')===false;more.textContent=open?'Ler menos':'Ler mais';more.setAttribute('aria-expanded',open);}
+
+  if(t.closest('.collbtn,.collbtn2')){
+    coll=!coll;
+    $$('.collbtn,.collbtn2').forEach(b=>b.setAttribute('aria-pressed',coll));
+    $('.collbtn2').innerHTML=coll?ic('check',20)+' Na sua coleção':'Adicionar à coleção';
+    $('.collbtn').innerHTML=ic('bookmark').replace('fill="none"',coll?'fill="#E9B44C"':'fill="none"');
+    $('.collbtn').style.color=coll?'#E9B44C':'';
+  }
+
+  const rc=t.closest('.recent');
+  if(rc){const q=$('#q');q.value=rc.textContent;filterB1();q.focus();}
+
+  const fc=t.closest('.fc');
+  if(fc){const set=S[fc.dataset.k],v=fc.dataset.v;set.has(v)?set.delete(v):set.add(v);sync();}
+
+  if(t.closest('#fresh')){S.fresh=!S.fresh;sync();}
+  if(t.closest('#clr')||t.closest('[data-act="clear"]')){Object.assign(S,DEF(),{types:new Set(),genres:new Set(),decades:new Set(),imdb:1,fresh:false});sync();}
+
+  const rm=t.closest('[data-rm]');
+  if(rm){const k=rm.dataset.rm;if(k==='imdb')S.imdb=1;else if(k==='fresh')S.fresh=false;else{const [s,v]=k.split(':');S[s].delete(v);}sync();}
+
+  if(t.closest('#sortB')){sortI=(sortI+1)%SORTS.length;renderB3();}
+});
+$('#imdbR').addEventListener('input',e=>{S.imdb=+e.target.value;sync();});
+
+/* ---------- busca (B1) ---------- */
+function filterB1(){
+  const q=norm($('#q').value.trim()),list=$('#b1list'),em=$('#b1empty');
+  const res=FILMS.filter(f=>!q||norm(title(f)+' '+f.genre+' '+f.year).includes(q));
+  list.innerHTML=res.map(f=>rowF(f)).join('');
+  em.hidden=res.length>0;
+  em.innerHTML=res.length?'':`<p><strong style="color:var(--tx)">Nenhum pôster com “${$('#q').value.trim().replace(/</g,'&lt;')}”.</strong></p><p>Confira a grafia ou tente um gênero, como Drama.</p>`;
+}
+$('#q').addEventListener('input',filterB1);
+
+/* ---------- login (A1) ---------- */
+const em=$('#email'),pw=$('#pw'),emM=$('#emailMsg'),pwM=$('#pwMsg'),btn=$('#loginBtn');
+const HINT='Use pelo menos 8 caracteres.';
+function setMsg(el,text,err){el.className='msg'+(err?' err':'');el.innerHTML=(err?ic('warn',16):'')+`<span>${text}</span>`;}
+const okEmail=v=>/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim());
+function vEmail(show){
+  if(okEmail(em.value)){em.removeAttribute('aria-invalid');setMsg(emM,'',false);emM.innerHTML='';return true;}
+  if(show){em.setAttribute('aria-invalid','true');setMsg(emM,'Digite um e-mail válido, como nome@email.com.',true);}
+  return false;
+}
+function vPw(show){
+  if(pw.value.length>=8){pw.removeAttribute('aria-invalid');setMsg(pwM,HINT,false);return true;}
+  if(show){pw.setAttribute('aria-invalid','true');setMsg(pwM,'A senha precisa ter pelo menos 8 caracteres.',true);}
+  return false;
+}
+em.addEventListener('blur',()=>{if(em.value)vEmail(true);});
+em.addEventListener('input',()=>{if(em.getAttribute('aria-invalid'))vEmail(true);});
+pw.addEventListener('input',()=>{if(pw.getAttribute('aria-invalid'))vPw(true);});
+$('#loginForm').addEventListener('submit',e=>{
+  e.preventDefault();
+  const a=vEmail(true),b=vPw(true);
+  if(!a){em.focus();return;}
+  if(!b){pw.focus();return;}
+  btn.disabled=true;btn.textContent='Entrando…';
+  setTimeout(()=>{btn.innerHTML=ic('check',20)+' Tudo certo! Abrindo a galeria';flashTo('f-a2');
+    setTimeout(()=>{btn.disabled=false;btn.textContent='Entrar';},2200);},1000);
+});
+})();
+</script>
+</body>
+</html>
